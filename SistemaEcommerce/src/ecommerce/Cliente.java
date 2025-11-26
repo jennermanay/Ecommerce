@@ -28,7 +28,7 @@ public class Cliente extends Usuario {
 
     public Pedido realizarPedido() {
         if (carrito.getArticulos().isEmpty()) {
-            System.out.println(" El carrito está vacío. No se puede realizar el pedido.");
+            System.out.println(" El carrito esta vacio. No se puede realizar el pedido.");
             return null;
         }
 
@@ -62,4 +62,5 @@ public class Cliente extends Usuario {
         System.out.println(" Pedido #" + nuevoPedido.getIdPedido() + " realizado con exito.");
         return nuevoPedido;
     }
+
 }
