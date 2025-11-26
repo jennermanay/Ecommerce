@@ -14,12 +14,12 @@ public class Usuario {
         this.password = password;
     }
     
-    // Getters esenciales
+    // Getters
     public String getEmail() { return email; }
     public String getPassword() { return password; }
     public String getNombre() { return nombre; }
 
-    // Métodos (según el diagrama)
+    // Métodos
     public boolean login(String email, String password) {
         return this.email.equals(email) && this.password.equals(password);
     }
@@ -27,6 +27,7 @@ public class Usuario {
         System.out.println("Sesion de " + nombre + " cerrada.");
     }
     public void operation() { 
-        // En una aplicación real, este sería un método abstracto o de propósito general
+        
     }
+
 }
