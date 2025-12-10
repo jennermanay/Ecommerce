@@ -1,13 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package ecommerce;
 
-/**
- *
- * @author Jenner Jordy
- */
 public class MetodoPago {
   private int idMetodoPago;
     private String nombreMetodo;
@@ -29,4 +22,5 @@ public class MetodoPago {
     public String toString() {
         return idMetodoPago + " - " + nombreMetodo + " (" + numeroCuenta + ")";
     }
+
 }
