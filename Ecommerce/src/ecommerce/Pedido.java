@@ -8,68 +8,54 @@ package ecommerce;
  *
  * @author Jenner Jordy
  */
-import ConexionSQL.ProductoCRUD;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.ArrayList;
+
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.Date;
+
 
 public class Pedido {
     private int idPedido;
-    private LocalDate fecha;
-    private String estado;
-    private List<DetallePedido> detalles;
-    private Pago pago;
+    private int idCliente;
+    private Date fechaPedido;
+    private double total;
     
-    private ProductoCRUD productoCRUD = new ProductoCRUD(); 
+    private int idMetodoPago; 
+    private String estado;
+    private String direccion;
+    private Integer idDelivery; // Integer para permitir NULL en SQL Server
+    private LocalDateTime horaEntrega;
+    
+    private List<DetallePedido> detalles; 
 
-    public Pedido(int idPedido, LocalDate fecha, String estado) {
+    public Pedido(int idPedido, int idCliente, Date fechaPedido, String estado, double total, List<DetallePedido> detalles, String direccion) {
         this.idPedido = idPedido;
-        this.fecha = fecha;
+        this.idCliente = idCliente;
+        this.fechaPedido = fechaPedido;
+        this.total = total;
         this.estado = estado;
-        this.detalles = new ArrayList<>();
+        this.detalles = detalles;
+        this.direccion=direccion;
     }
 
     public int getIdPedido() { return idPedido; }
+    public void setIdPedido(Integer idPedido) { this.idPedido = idPedido; }
+    public String getDireccion() { return direccion; }
+    public void setDireccion(String direccion) { this.direccion = direccion; }
+    public int getIdCliente() { return idCliente; }
+    public double getTotal() { return total; }
+    public List<DetallePedido> getDetalles() { return detalles; }    
+    public int getIdMetodoPago() { return idMetodoPago; }
+    public void setIdMetodoPago(int idMetodoPago) { this.idMetodoPago = idMetodoPago; }
     public String getEstado() { return estado; }
-    public void setPago(Pago pago) { this.pago = pago; }
+    public void setEstado(String estado) { this.estado = estado; }
+    public Integer getIdDelivery() { return idDelivery; }
+    public void setIdDelivery(Integer idDelivery) { this.idDelivery = idDelivery; }
+    public LocalDateTime getHoraEntrega() { return horaEntrega; }
+    public void setHoraEntrega(LocalDateTime horaEntrega) { this.horaEntrega = horaEntrega; }
 
-    public void agregarDetalle(DetallePedido detalle, Producto producto) {
-        detalle.setProducto(producto);
-        this.detalles.add(detalle);
-        
-        try {
-            productoCRUD.actualizarStock(producto.getIdProducto(), detalle.getCantidad());
-            System.out.println("    -> Stock de " + producto.getNombreProducto() + " actualizado en BD.");
-        } catch (SQLException e) {
-            System.err.println("Error al persistir el stock. El pedido puede tener problemas.");
-        }
-    }
-
-    public double calcularTotal() {
-        double total = 0;
-        for (DetallePedido dp : detalles) {
-            total += dp.calcularSubTotal();
-        }
-        return total;
-    }
-
-    public void cambiarEstado(String nuevoEstado) {
-        this.estado = nuevoEstado;
-        System.out.println("🔔 Estado del pedido #" + idPedido + " cambiado a: " + nuevoEstado);
-    }
-    
     @Override
     public String toString() {
-        String s = "\n--- PEDIDO #" + idPedido + " ---\n";
-        s += "Fecha: " + fecha + ", Estado: " + estado + "\n";
-        s += "Detalles:\n";
-        for (DetallePedido dp : detalles) {
-            s += "  - " + dp.getProducto().getNombreProducto() + " x" + dp.getCantidad() + " @$" + dp.getPrecioUnitario() + " = $" + dp.calcularSubTotal() + "\n";
-        }
-        s += "TOTAL: $" + calcularTotal() + "\n";
-        s += (pago != null ? "Pago: " + pago.getMetodoPago() + " (" + pago.getMonto() + ")" : "Pago pendiente") + "\n";
-        s += "----------------------";
-        return s;
+        return "Pedido #" + idPedido + " | Total: $" + total + " | Estado: " + estado;
     }
 }
