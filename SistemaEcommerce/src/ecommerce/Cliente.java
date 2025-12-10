@@ -1,65 +1,54 @@
+
 package ecommerce;
 
-import ecommerce.CarritoCompra;
-import ecommerce.DetallePedido;
-import ecommerce.Pago;
-import ecommerce.Pedido;
-import ecommerce.Producto;
+import java.util.Date;
+import java.util.List;
 
-// Clase Cliente
 public class Cliente extends Usuario {
     private String direccion;
     private String telefono;
-    private CarritoCompra carrito; 
+    private CarritoCompra carrito;
 
     public Cliente(int idUsuario, String nombre, String email, String password, String direccion, String telefono) {
         super(idUsuario, nombre, email, password);
         this.direccion = direccion;
         this.telefono = telefono;
-        this.carrito = new CarritoCompra(); 
+        this.carrito = new CarritoCompra();
     }
 
-    // Getters y Setters
+    public String getDireccion() { return direccion; }
+    public String getTelefono() { return telefono; }
     public CarritoCompra getCarrito() { return carrito; }
 
     public void agregarAlCarrito(Producto producto) {
-        carrito.agregarProducto(producto);
+        carrito.agregarArticulo(producto);
+        System.out.println("Producto " + producto.getNombreProducto() + " anadido al carrito.");
     }
-
-    public Pedido realizarPedido() {
+    
+    public Pedido generarNuevoPedido(int idMetodoPago) {
         if (carrito.getArticulos().isEmpty()) {
-            System.out.println(" El carrito esta vacio. No se puede realizar el pedido.");
+            System.out.println("El carrito esta vacio. No se puede realizar el pedido.");
             return null;
         }
-
-        // Crear el pedido
+        
         Pedido nuevoPedido = new Pedido(
-            (int) (Math.random() * 1000), 
-            java.time.LocalDate.now(),
-            "PENDIENTE"
-        );
-        
-        // Transferir DetallePedido y actualizar stock en BD
-        for (Producto p : carrito.getArticulos()) {
-            // solo tomo 1 unidad por cada producto añadido al carrito
-            DetallePedido detalle = new DetallePedido(1, p.getPrecio()); 
-            nuevoPedido.agregarDetalle(detalle, p); 
-        }
-        
-        // Crear pago
-        Pago pago = new Pago(
-            (int) (Math.random() * 500), 
-            nuevoPedido.calcularTotal(), 
-            "Tarjeta", 
-            java.time.LocalDate.now()
-        );
-        pago.procesarPago();
-        nuevoPedido.setPago(pago);
-        
-        // Limpiar carrito
-        carrito = new CarritoCompra(); 
+            (int)(new Date().getTime() % 10000), 
+            this.idUsuario, 
+            new Date(), 
+            "POR_ENTREGAR", 
+            carrito.calcularTotal(), 
+            carrito.getArticulosEnDetalle(),
+            this.direccion);
 
-        System.out.println(" Pedido #" + nuevoPedido.getIdPedido() + " realizado con exito.");
+        nuevoPedido.setIdMetodoPago(idMetodoPago);
+        
+        carrito.vaciarCarrito();
+        System.out.println("Pedido generado localmente. Total: " + nuevoPedido.getTotal());
         return nuevoPedido;
+    }
+
+    @Override
+    public String toString() {
+        return "ID "+getIdUsuario()+" Cliente: " + getNombre() + " (" + getEmail() + ") Direccion: " + getDireccion()+ " Telefono: "+getTelefono();
     }
 }
