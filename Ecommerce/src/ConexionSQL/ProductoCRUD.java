@@ -9,45 +9,42 @@ package ConexionSQL;
  * @author Jenner Jordy
  */
 import ecommerce.Producto;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProductoCRUD {
     
-     public List<Producto> obtenerTodos() {
+    public List<Producto> obtenerTodos() {
         List<Producto> productos = new ArrayList<>();
-         String SQL = "SELECT idProducto, nombreProducto, descripcion, precio, stock FROM PRODUCTOS WHERE stock > 0 ORDER BY idProducto"; 
+        String SQL = "SELECT idProducto, nombreProducto, descripcion, precio, stock, idCategoria FROM PRODUCTOS";
         
-         try (Connection con = SQLConection.getConnection();
-             PreparedStatement pstmt = con.prepareStatement(SQL);
-             ResultSet rs = pstmt.executeQuery()) {
+        try (Connection conn = SQLConection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(SQL)) {
             
             while (rs.next()) {
-                Producto p = new Producto(
+                productos.add(new Producto(
                     rs.getInt("idProducto"),
                     rs.getString("nombreProducto"),
                     rs.getString("descripcion"),
                     rs.getDouble("precio"),
-                    rs.getInt("stock")
-                );
-                productos.add(p);
+                    rs.getInt("stock"),
+                    rs.getInt("idCategoria")
+                ));
             }
         } catch (SQLException e) {
-            System.err.println("Error al obtener productos de la BD: " + e.getMessage());
+            System.err.println("Error al obtener todos los productos: " + e.getMessage());
         }
         return productos;
     }
-    
-     public Producto obtenerPorId(int id) {
+
+    public Producto obtenerPorId(int id) {
+        String SQL = "SELECT idProducto, nombreProducto, descripcion, precio, stock, idCategoria FROM PRODUCTOS WHERE idProducto = ?";
         Producto producto = null;
-        String SQL = "SELECT idProducto, nombreProducto, descripcion, precio, stock FROM PRODUCTOS WHERE idProducto = ?";
         
-        try (Connection con = SQLConection.getConnection();
-             PreparedStatement pstmt = con.prepareStatement(SQL)) {
+        try (Connection conn = SQLConection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(SQL)) {
             
             pstmt.setInt(1, id);
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -57,7 +54,8 @@ public class ProductoCRUD {
                         rs.getString("nombreProducto"),
                         rs.getString("descripcion"),
                         rs.getDouble("precio"),
-                        rs.getInt("stock")
+                        rs.getInt("stock"),
+                        rs.getInt("idCategoria")
                     );
                 }
             }
@@ -66,23 +64,96 @@ public class ProductoCRUD {
         }
         return producto;
     }
-
-     public void actualizarStock(int idProducto, int cantidadVendida) throws SQLException {
-        String SQL_STOCK = "UPDATE PRODUCTOS SET stock = stock - ? WHERE idProducto = ?";
+    
+    public void agregarProducto(Producto p) throws SQLException {
+        String SQL = "INSERT INTO PRODUCTOS (nombreProducto, descripcion, precio, stock, idCategoria) VALUES (?, ?, ?, ?, ?)";
         
         try (Connection conn = SQLConection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQL_STOCK)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQL)) {
             
-            pstmt.setInt(1, cantidadVendida);
-            pstmt.setInt(2, idProducto);
+            pstmt.setString(1, p.getNombreProducto());
+            pstmt.setString(2, p.getDescripcion());
+            pstmt.setDouble(3, p.getPrecio());
+            pstmt.setInt(4, p.getStock());
+            pstmt.setInt(5, p.getIdCategoria());
             
-            if (pstmt.executeUpdate() == 0) {
-                 throw new SQLException("Fallo al actualizar stock, no se encontró el producto.");
-            }
-            
+            pstmt.executeUpdate();
+            System.out.println("Producto " + p.getNombreProducto() + " agregado con exito.");
         } catch (SQLException e) {
-             System.err.println("Error FATAL al actualizar el stock del producto " + idProducto + ": " + e.getMessage());
-             throw e; // Lanza la excepción para que la capa superior maneje el fallo de persistencia
+            System.err.println("Error al agregar producto: " + e.getMessage());
+            throw e;
         }
     }
+    
+    public void aumentarStock(int idProducto, int cantidad) throws SQLException {
+        String SQL = "UPDATE PRODUCTOS SET stock = stock + ? WHERE idProducto = ?";
+        
+        try (Connection conn = SQLConection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(SQL)) {
+            
+            pstmt.setInt(1, cantidad);
+            pstmt.setInt(2, idProducto);
+            
+            if (pstmt.executeUpdate() > 0) {
+                 System.out.println("Stock actualizado para producto ID " + idProducto);
+            } else {
+                 System.out.println("Producto ID " + idProducto + " no encontrado.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al aumentar stock: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public void descontarStock(int idProducto, int cantidad, Connection conn) throws SQLException {
+        String SQL = "UPDATE PRODUCTOS SET stock = stock - ? WHERE idProducto = ? AND stock >= ?";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(SQL)) {
+            pstmt.setInt(1, cantidad);
+            pstmt.setInt(2, idProducto);
+            pstmt.setInt(3, cantidad);
+
+            int filasAfectadas = pstmt.executeUpdate();
+            if (filasAfectadas == 0) {
+                throw new SQLException("Error de stock: No hay suficiente stock para el producto ID: " + idProducto);
+            }
+        }
+    }
+    
+        public void editarProducto(Producto p) throws SQLException {
+        String SQL = "UPDATE PRODUCTOS SET nombreProducto = ?, descripcion = ?, precio = ?, stock = ?, idCategoria = ? WHERE idProducto = ?";
+
+        try (Connection conn = SQLConection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(SQL)) {
+
+            pstmt.setString(1, p.getNombreProducto());
+            pstmt.setString(2, p.getDescripcion());
+            pstmt.setDouble(3, p.getPrecio());
+            pstmt.setInt(4, p.getStock());
+            pstmt.setInt(5, p.getIdCategoria());
+            pstmt.setInt(6, p.getIdProducto());
+
+            pstmt.executeUpdate();
+            System.out.println("Producto " + p.getNombreProducto() + " editado con exito.");
+
+        } catch (SQLException e) {
+            System.err.println("Error al editar producto: " + e.getMessage());
+            throw e; 
+        }
+    }
+    
+    public void eliminarProducto(int id) throws SQLException {
+        String SQL = "DELETE FROM PRODUCTOS WHERE idProducto = ?";
+        try (Connection conn = SQLConection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(SQL)) {
+            
+            pstmt.setInt(1, id);
+            pstmt.executeUpdate();
+            System.out.println("Producto ID " + id + " eliminado con exito.");
+
+        } catch (SQLException e) {
+            System.err.println("Error al eliminar usuario: " + e.getMessage());
+            throw e; 
+        }
+    } 
 }
