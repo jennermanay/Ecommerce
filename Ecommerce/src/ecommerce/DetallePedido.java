@@ -9,22 +9,21 @@ package ecommerce;
  * @author Jenner Jordy
  */
 public class DetallePedido {
-    private int cantidad;
+private int idDetalle;
+    private int idPedido;
+    private Producto producto;
     private double precioUnitario;
-    private Producto producto; // Objeto asociado
+    private int cantidad;
 
-    public DetallePedido(int cantidad, double precioUnitario) {
-        this.cantidad = cantidad;
+    public DetallePedido(int idDetalle, int idPedido, Producto producto, double precioUnitario, int cantidad) {
+        this.idDetalle = idDetalle;
+        this.idPedido = idPedido;
+        this.producto = producto;
         this.precioUnitario = precioUnitario;
+        this.cantidad = cantidad;
     }
 
-     public double getPrecioUnitario() { return precioUnitario; }
-    public int getCantidad() { return cantidad; }
     public Producto getProducto() { return producto; }
-    
-    public void setProducto(Producto producto) { this.producto = producto; }
-
-    public double calcularSubTotal() {
-        return cantidad * precioUnitario;
-    }
+    public int getCantidad() { return cantidad; }
+    public double getPrecioUnitario() { return precioUnitario; }
 }
