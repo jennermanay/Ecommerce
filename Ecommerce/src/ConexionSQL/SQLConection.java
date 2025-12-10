@@ -12,18 +12,11 @@ import java.sql.SQLException;
  */
 
 public class SQLConection {
-    // Puerto estándar de SQL Server es 1433.
-    // Reemplaza 'localhost' con el nombre/IP de tu servidor si no es local.
     private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=ecommerce;encrypt=false;trustServerCertificate=true;";
-    
-    // Si usas autenticación de Windows:
-    // private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=ecommerce_db;integratedSecurity=true";
-    
     private static final String USER = "sa";       // <-- Usuario de SQL Server
     private static final String PASS = "Sistemas10$";   // <-- Contraseña de SQL Server
     
     public static Connection getConnection() throws SQLException {
-        // Carga explícita del driver (Buena práctica, aunque a veces innecesaria)
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
         } catch (ClassNotFoundException e) {
